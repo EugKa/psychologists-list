@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "psychologists-list",
+	"webDir": "build",
+	"bundledWebRuntime": false
+}
