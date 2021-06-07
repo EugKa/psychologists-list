@@ -1,62 +1,71 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { IPsycholog } from '../../../types/psycholog';
 import * as api from '../../../api'
-import { stat } from 'fs';
 
 export interface AppState {
     psychologistsList: IPsycholog[];
-    loading?: boolean;
+    status: string
     error?: boolean;
 }
 
 const initialState: AppState = {
     psychologistsList: [],
-    loading: false,
+    status: 'idle',
     error: false
 }
 
 export const fetchDataList = createAsyncThunk<{ list: IPsycholog[] }>(
-    "data/fetchDataList",
+    "@@DATA/fetchDataList",
     async () => {
       const data = await api.getList();
       return { list: data };
     }
 );
 
-export const addPsycholog = createAsyncThunk(
-    "data/addPsycholog",
+export const createPsycholog = createAsyncThunk(
+    "@@DATA/createPsycholog",
     async (data: IPsycholog) => {
-    await api.createPsycholog(data)
+        await api.createPsycholog(data)
+        return data
     }
 );
 
 export const updatePsychologRating = createAsyncThunk(
-    "data/updatePsychologRating",
+    "@@DATA/updatePsychologRating",
     async (data:any) => {
         const { rating, id } = data;
         await api.updateRating(rating, id)
+        return data
     }
 );
 
 const psychologistsSlice = createSlice({
-    name: "data",
+    name: "@@DATA",
     initialState,
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(fetchDataList.pending, (state) => {
-            state.loading = true;
-            state.error = false;
+            state.status = 'loading';
         })
         builder.addCase(fetchDataList.fulfilled, (state, action) => {
             state.psychologistsList = action.payload.list;
-            state.loading = false;
-            state.error = false;
+            state.status = 'successed';;
         })    
         builder.addCase(fetchDataList.rejected, 
             (state) => {
-            state.loading = false;
+            state.status = 'failed';
             state.error = true;
         });
+        builder.addCase(createPsycholog.fulfilled, (state, action) => {
+            state.psychologistsList.push(action.payload)
+        })
+        builder.addCase(updatePsychologRating.fulfilled, (state, action) => {
+            const { rating, id } = action.payload;
+            const existingPost = state.psychologistsList.find((item) => item.id === id)
+            if (existingPost) {
+                existingPost.rating = rating;
+            }
+        })
     },
 });
   

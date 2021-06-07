@@ -1,28 +1,21 @@
+import React from 'react'
 import { IonContent, IonToast } from '@ionic/react';
-import React, { useState } from 'react'
-
 interface Props {
-    type: any;
+    type: string;
     message: string;
-    showToast: boolean;
 }
 
-export const DisplayMessage = () => {
-    console.log('eee')
-    
+export const DisplayMessage = ({ type, message }:Props) => {
     return <IonContent>
         <IonToast
-            color={'success'}
+            color={type}
             position="top"
             isOpen={true}
-            message={'success'}
+            message={message}
             buttons={[
                 {
                 text: 'Закрыть',
                 role: 'cancel',
-                handler: () => {
-                    console.log('Cancel clicked');
-                }
                 }
             ]}
         />

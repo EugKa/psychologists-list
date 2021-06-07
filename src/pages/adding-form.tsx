@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
     IonSelectOption, 
     IonSelect, 
@@ -12,12 +12,14 @@ import {
 } from '@ionic/react';
 import './adding-form.scss'
 import { useDispatch } from 'react-redux';
-import { addPsycholog } from '../stote/features/psychologists-data';
+import { createPsycholog } from '../stote/features/psychologists-data';
 import { IPsycholog } from '../types/psycholog'
 import { useForm, SubmitHandler } from "react-hook-form";
+import { DisplayMessage } from '../components/display-message';
 
 
 export const AddingForm: React.FC = () => {
+  const [submitStatus, setSubmitStatus] = useState('')
   const { register, handleSubmit, formState: { errors }, reset } = useForm<IPsycholog>({
     defaultValues: {
       rating: null,
@@ -25,28 +27,45 @@ export const AddingForm: React.FC = () => {
   });
   // get the store.dispatch function from useDispatch
   const dispatch = useDispatch()
+
   //submitting and checking form values
   const onSubmit: SubmitHandler<IPsycholog> = data => {
-    dispatch(addPsycholog(data))
-    console.log(`data`,  data)
-    reset(data)
+    try {
+      dispatch(createPsycholog(data))
+      setSubmitStatus('pending')
+      reset();
+    } catch (error) {
+      console.error('Failed to save: ', error)
+      setSubmitStatus('falied')
+    } finally {
+      setSubmitStatus('success')
+    }
   };
 
+  const statusBanner = submitStatus === 'success' ?  ( 
+    <DisplayMessage type="success" message="Спецыалист добавлен"/>
+  ) : submitStatus === 'falied' ? (
+    <DisplayMessage type="danger" message="Что то пошло не так. Пожалуйста попробуйте позже"/>
+  ) : null
+
+
+  console.log('submited',submitStatus);
   return (
       <IonContent>
       <IonCard>
+          {statusBanner}
           <form onSubmit={handleSubmit(onSubmit)} className="adding-form__form">
             <IonList>
               <IonItem>
-                  <IonLabel position="floating">Имя</IonLabel>
+                  <IonLabel position="floating">Имя и фамалия</IonLabel>
                   <IonInput {...register("name", { 
                       required: true, 
                       minLength: 5, 
-                      pattern: /^([a-zA-Z0-9]+|[a-zA-Z0-9]+\s{1}[a-zA-Z0-9]{1,}|[a-zA-Z0-9]+\s{1}[a-zA-Z0-9]{3,}\s{1}[a-zA-Z0-9]{1,})$/
+                      pattern: /([а-яА-яa-zA-z]+\s)+([а-яА-яa-zA-z]+)/ig
                     })}
                   />
               </IonItem>
-              {errors.name && <div className="adding-form__error">Введите имя.</div>}  
+              {errors.name && <div className="adding-form__error">Введите имя и фамилию.</div>}  
               <IonItem>
                   <IonLabel position="floating">Email</IonLabel>
                     <IonInput 
