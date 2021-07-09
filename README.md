@@ -1,2 +1,2 @@
 # psychologists-list
-https://psychologists-list.web.app/disfavorite
+https://psychologists-list.web.app
